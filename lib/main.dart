@@ -8,7 +8,7 @@ void main() {
   runApp(const WhatsLinkGen());
 }
 
-var currPhoneNumber = "";
+String currPhoneNumber = "";
 
 class WhatsLinkGen extends StatelessWidget {
   const WhatsLinkGen({Key? key}) : super(key: key);
@@ -18,90 +18,82 @@ class WhatsLinkGen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => ThemeModel(),
       child: Consumer<ThemeModel>(
-          builder: (context, ThemeModel themeNotifier, child) {
-        return MaterialApp(
-          title: 'WhatsLink Generator',
-          theme: themeNotifier.isDark
-              ? ThemeData(
-                  brightness: Brightness.dark,
-                  primarySwatch: Colors.green,
-                )
-              : ThemeData(
-                  brightness: Brightness.light,
-                  primarySwatch: Colors.green,
-                ),
-          debugShowCheckedModeBanner: false,
-          home: const MainInterface(),
-        );
-      }),
+        builder: (context, themeNotifier, child) {
+          return MaterialApp(
+            title: 'WhatsLink Generator',
+            theme: ThemeData(
+              brightness: themeNotifier.isDark ? Brightness.dark : Brightness.light,
+              primarySwatch: Colors.green,
+            ),
+            debugShowCheckedModeBanner: false,
+            home: const MainInterface(),
+          );
+        },
+      ),
     );
   }
 }
 
-void _launchURL() async {
-  var _url =
-      "https://api.whatsapp.com/send?phone=" + currPhoneNumber.substring(1);
-  if (!await launch(_url)) throw 'Could not launch $_url';
+Future<void> _launchURL() async {
+  final String url = "https://api.whatsapp.com/send?phone=${currPhoneNumber.substring(1)}";
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw 'Could not launch $url';
+  }
 }
 
 class MainInterface extends StatefulWidget {
   const MainInterface({Key? key}) : super(key: key);
 
   @override
-  _MainInterfaceState createState() => _MainInterfaceState();
+  State<MainInterface> createState() => _MainInterfaceState();
 }
 
 class _MainInterfaceState extends State<MainInterface> {
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeModel>(
-        builder: (context, ThemeModel themeNotifier, child) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('WhatsLink Generator'),
-          actions: [
-            IconButton(
-                icon: Icon(
-                    themeNotifier.isDark ? Icons.dark_mode : Icons.light_mode),
+      builder: (context, themeNotifier, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('WhatsLink Generator'),
+            actions: [
+              IconButton(
+                icon: Icon(themeNotifier.isDark ? Icons.dark_mode : Icons.light_mode),
                 onPressed: () {
                   themeNotifier.isDark
                       ? themeNotifier.isDark = false
                       : themeNotifier.isDark = true;
-                })
-          ],
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Column(
-                children: [
-                  IntlPhoneField(
-                    initialCountryCode: "BR",
-                    onChanged: (phone) {
-                      currPhoneNumber = phone.completeNumber;
-                    },
-                    disableLengthCheck: true,
-                    decoration: const InputDecoration(
-                      labelText: "Phone Number",
-                      hintText: "12 3 4567-8910",
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        _launchURL();
-                      },
-                      child: const Text('Start Chatting!'),
-                    ),
-                  ),
-                ],
+                },
               ),
             ],
           ),
-        ),
-      );
-    });
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                IntlPhoneField(
+                  initialCountryCode: "BR",
+                  onChanged: (phone) {
+                    currPhoneNumber = phone.completeNumber;
+                  },
+                  disableLengthCheck: true,
+                  decoration: const InputDecoration(
+                    labelText: "Phone Number",
+                    hintText: "12 3 4567-8910",
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _launchURL,
+                  child: const Text('Start Chatting!'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

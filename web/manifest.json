@@ -1,6 +1,6 @@
 {
-    "name": "whatsapplinkgen",
-    "short_name": "whatsapplinkgen",
+    "name": "gitclones",
+    "short_name": "gitclones",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
