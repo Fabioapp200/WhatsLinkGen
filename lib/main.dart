@@ -38,12 +38,9 @@ class WhatsLinkGen extends StatelessWidget {
 }
 
 Future<void> _launchURL() async {
-  final String url =
-      "https://api.whatsapp.com/send?phone=${currPhoneNumber.substring(1)}";
-  if (await canLaunch(url)) {
-    await launch(url);
-  } else {
-    throw 'Could not launch $url';
+  final Uri _url = Uri.parse("https://api.whatsapp.com/send?phone=${currPhoneNumber.substring(1)}");
+  if (!await launchUrl(_url)) {
+    throw Exception('Could not launch $_url');
   }
 }
 
