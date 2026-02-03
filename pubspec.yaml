@@ -3,10 +3,10 @@ description: "A link generator for the green chatting app."
 publish_to: 'none' 
 
 
-version: 1.0.0+4
+version: 1.1.0+5
 
 environment:
-  sdk: ^3.8.1
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter:
