@@ -1,25 +1,53 @@
 //theme_model.dart
 import 'package:flutter/material.dart';
+
 import 'theme_preference.dart';
 
-class ThemeModel extends ChangeNotifier {
-  bool _isDark = false;
-  ThemePreferences _preferences = ThemePreferences();
+class ThemeModel extends ChangeNotifier with WidgetsBindingObserver {
+  bool _isDark;
+  bool _hasManualPreference = false;
+  final ThemePreferences _preferences = ThemePreferences();
   bool get isDark => _isDark;
 
-  ThemeModel() {
-    _isDark = false;
-    _preferences = ThemePreferences();
-    getPreferences();
+  ThemeModel()
+    : _isDark =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark {
+    WidgetsBinding.instance.addObserver(this);
+    _loadPreference();
   }
+
   set isDark(bool value) {
     _isDark = value;
+    _hasManualPreference = true;
     _preferences.setTheme(value);
     notifyListeners();
   }
 
-  getPreferences() async {
-    _isDark = await _preferences.getTheme();
+  Future<void> _loadPreference() async {
+    final savedTheme = await _preferences.getTheme();
+    if (savedTheme != null) {
+      _isDark = savedTheme;
+      _hasManualPreference = true;
+      notifyListeners();
+    }
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    if (_hasManualPreference) {
+      return;
+    }
+
+    _isDark =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+        Brightness.dark;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 }
